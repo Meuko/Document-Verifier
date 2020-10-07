@@ -1,0 +1,37 @@
+{
+  "version": "https://schema.openattestation.com/2.0/schema.json",
+  "data": {
+    "$template": {
+      "name": "645a507e-d1f6-44b7-ace5-f2143a530789:string:COC",
+      "type": "22601356-d27f-4b05-acf2-9a1ee383d879:string:EMBEDDED_RENDERER",
+      "url": "4b93193e-c2b4-42ff-8e8b-097f12989749:string:https://www.renderer.mza.jp"
+    },
+    "recipient": {
+      "name": "a915176e-9550-411c-97fa-1ec7a31377e4:string:Hamza Tokuchi",
+      "address": {
+        "street": "ea337ecd-07f0-48e0-ae1c-54b47f3d9fa4:string:Kolenlaan 30A",
+        "zipCode": "e4bc1266-35e7-4804-a2b7-d31b9d203bae:string:3029ED",
+        "country": "c0384c50-6841-420e-bf74-3b40400681db:string:The Netherlands"
+      }
+    },
+    "vatNumber": "64f807c3-76a1-48bc-a44e-10414985f368:string:9283827369RD",
+    "companyA": "6e2a7b0b-8e05-4b8d-b135-21814339087d:string:BlockLab",
+    "companyB": "beed65d5-a6a6-4152-905c-192bf943ae58:string:Appeldijk",
+    "issuers": [
+      {
+        "name": "d64cee36-1013-46a2-bf6c-2d2d362fa860:string:MZA Issuer",
+        "documentStore": "fe5a37cb-286e-4051-9e66-1217fd73572a:string:0xA92c7C46813aB9a7440CEcc5e0F10B7bB87Fee15",
+        "identityProof": {
+          "type": "2691b86d-83d1-4116-bd53-bc94360005ac:string:DNS-TXT",
+          "location": "1993e5f7-3f16-4f90-b111-250dfc82c5f3:string:issuer.mza.jp"
+        }
+      }
+    ]
+  },
+  "signature": {
+    "type": "SHA3MerkleProof",
+    "targetHash": "466d282cfc43f9ad93d61702f9c5c97b8d18cb95a2cfeb69ed992d690ce63dca",
+    "proof": [],
+    "merkleRoot": "466d282cfc43f9ad93d61702f9c5c97b8d18cb95a2cfeb69ed992d690ce63dca"
+  }
+}
