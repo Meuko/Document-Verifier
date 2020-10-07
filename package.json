@@ -1,0 +1,19 @@
+{
+  "name": "document-verifier",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Meuko/Document-Verifier.git"
+  },
+  "author": "Hamza Tokuchi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Meuko/Document-Verifier/issues"
+  },
+  "homepage": "https://github.com/Meuko/Document-Verifier#readme"
+}
