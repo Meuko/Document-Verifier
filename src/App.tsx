@@ -27,22 +27,26 @@ type IntegrityProps = {
 type IntegrityState = {
   document_integrity: boolean,
   document_status: boolean,
-  issuer_identity: boolean
+  issuer_identity: boolean,
+  file: string | null
 }
 
 class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> {
-  
+  myRef: React.RefObject<any>;
+
   constructor(props: any) {
     super(props);
     this.state = {
       document_integrity: false,
       document_status: false,
-      issuer_identity: false
+      issuer_identity: false,
+      file: null 
     };
+   this.myRef = React.createRef(); 
   }
 
   verify_document() {
-    verify(this.props.document, { network: "ropsten" }).then((fragments: any) => {
+    verify(this.state.file, { network: "ropsten" }).then((fragments: any) => {
       this.setState({
         document_integrity: isValid(fragments, ["DOCUMENT_INTEGRITY"]),
         document_status: isValid(fragments, ["DOCUMENT_STATUS"]),
@@ -51,8 +55,10 @@ class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> 
     });
   }
 
-  componentWillMount() {
-    this.verify_document();
+  update_document(file_contents: string) {
+    this.setState({
+      file: file_contents
+    });
   }
 
   render() {
@@ -69,7 +75,6 @@ class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> 
 }
 
 type FileProps = {
-
 };
 
 type FileState = {
@@ -233,13 +238,26 @@ export const FileUploaderPresentationalComponent: React.FunctionComponent<
   );
 };
 
-class App extends React.Component {
+
+
+type AppContextProps = {
+  certificate: File | null,
+  certificate_contents: string | null
+};
+
+const AppContext = React.createContext<Partial<AppContextProps>>({});
+class App extends React.Component<{},{}> {
   render(){
     return (
       <div className="App">
         <header className="App-header">
-          <DocumentIntegrity document={cert}/>
-          <FileUploader />
+          <AppContext.Provider value = { {
+            certificate: null,
+            certificate_contents: null
+          }}>
+            <DocumentIntegrity document={cert}/>
+            <FileUploader />
+          </AppContext.Provider>
         </header>
       </div>
     );
