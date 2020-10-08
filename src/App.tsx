@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { render } from '@testing-library/react';
@@ -79,8 +79,11 @@ type FileProps = {
 
 type FileState = {
   dragging: boolean,
-  file: File | null
+  certificate: File | null,
+  certificate_contents: string | null
 };
+
+const AppContext = React.createContext<Partial<AppContextProps>>({});
 
 class FileUploader extends React.Component<FileProps, FileState> {
   static counter = 0;
@@ -88,7 +91,7 @@ class FileUploader extends React.Component<FileProps, FileState> {
 
   constructor(props: FileProps) {
     super(props);
-    this.state = { dragging: false, file: null };
+    this.state = { dragging: false, certificate: null, certificate_contents: null};
   }
 
   dragEventCounter = 0;
@@ -122,16 +125,13 @@ class FileUploader extends React.Component<FileProps, FileState> {
     this.setState({ dragging: false });
 
     if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-      this.setState({ file: event.dataTransfer.files[0] });
+      this.setState(
+        { 
+          certificate: event.dataTransfer.files[0],
+        }
+      );
 
-      let data_reader: FileReader = new FileReader();
-
-      data_reader.onload = function (e: any) {
-        let result: string = e.target.result.replace(new RegExp('data:.*\/.*,'), '');
-        let decoded = new Buffer(result, 'base64').toString('ascii');
-        console.log(decoded);
-      };
-      data_reader.readAsDataURL(event.dataTransfer.files[0]);
+      this.readFileContents(event.dataTransfer.files[0]);
     }
   };
 
@@ -146,9 +146,25 @@ class FileUploader extends React.Component<FileProps, FileState> {
 
   onFileChanged = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      this.setState({ file: event.target.files[0] });
+      this.setState({ certificate: event.target.files[0] });
     }
   };
+
+  readFileContents (file: File) {
+      let data_reader: FileReader = new FileReader();
+      let decoded_data: string | null = null;
+      
+       data_reader.onload = (e: any) => {
+        let result: string = e.target.result.replace(new RegExp('data:.*\/.*,'), '');
+        this.handleFileContents(new Buffer(result, 'base64').toString('ascii'));
+      };
+
+      data_reader.readAsDataURL(file);
+  }
+
+  handleFileContents(file_contents: string) {
+    this.setState({certificate_contents: file_contents});
+  }
 
   componentDidMount() {
     window.addEventListener("dragover", (event: Event) => {
@@ -168,7 +184,7 @@ class FileUploader extends React.Component<FileProps, FileState> {
     return (
       <FileUploaderPresentationalComponent
         dragging={this.state.dragging}
-        file={this.state.file}
+        certificate={this.state.certificate}
         onSelectFileClick={this.onSelectFileClick}
         onDrag={this.overrideEventDefaults}
         onDragStart={this.overrideEventDefaults}
@@ -185,7 +201,7 @@ class FileUploader extends React.Component<FileProps, FileState> {
 
 type PresentationalProps = {
   dragging: boolean;
-  file: File | null;
+  certificate: File | null;
   onSelectFileClick: () => void;
   onDrag: (event: React.DragEvent<HTMLDivElement>) => void;
   onDragStart: (event: React.DragEvent<HTMLDivElement>) => void;
@@ -201,7 +217,7 @@ export const FileUploaderPresentationalComponent: React.FunctionComponent<
 > = props => {
   const {
     dragging,
-    file,
+    certificate,
     onSelectFileClick,
     onDrag,
     onDragStart,
@@ -217,7 +233,7 @@ export const FileUploaderPresentationalComponent: React.FunctionComponent<
     uploaderClasses += " file-uploader--dragging";
   }
 
-  const fileName = file ? file.name : null;
+  const fileName = certificate ? certificate.name : null;
 
   return (
     <div
@@ -245,7 +261,7 @@ type AppContextProps = {
   certificate_contents: string | null
 };
 
-const AppContext = React.createContext<Partial<AppContextProps>>({});
+
 class App extends React.Component<{},{}> {
   render(){
     return (
