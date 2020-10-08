@@ -2,27 +2,13 @@ import React, { useContext } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { render } from '@testing-library/react';
+import { ArrowFunction } from 'typescript';
 
-//verify(document, {
-//  network: "ropsten",
-//  promisesCallback: (verificationMethods: any) => {
-//    for (const verificationMethod of verificationMethods) {
-//      verificationMethod.then((fragment: any)=>
-//        console.log(
-//          `${fragment.name} has been resolved with status ${fragment.status}`
-//        )
-//      );
-//    }
-//  }
-//}).then((fragments: any) => {
-//  console.log(isValid(fragments)); // output true
-//});
 
-const cert = require("./wrapped-documents/certificate-valid-1.json");
 const { verify, isValid } = require("@govtechsg/oa-verify");
 
 type IntegrityProps = {
-  document: string
+  certificate_contents: string
 };
 type IntegrityState = {
   document_integrity: boolean,
@@ -46,13 +32,17 @@ class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> 
   }
 
   verify_document() {
-    verify(this.state.file, { network: "ropsten" }).then((fragments: any) => {
+    verify(JSON.parse(this.props.certificate_contents), { network: "ropsten" }).then((fragments: any) => {
       this.setState({
         document_integrity: isValid(fragments, ["DOCUMENT_INTEGRITY"]),
         document_status: isValid(fragments, ["DOCUMENT_STATUS"]),
         issuer_identity: isValid(fragments, ["ISSUER_IDENTITY"])
       });
     });
+  }
+
+  componentDidUpdate() {
+    this.verify_document();
   }
 
   update_document(file_contents: string) {
@@ -75,6 +65,7 @@ class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> 
 }
 
 type FileProps = {
+  contentBubbler: (a: string) => void
 };
 
 type FileState = {
@@ -82,8 +73,6 @@ type FileState = {
   certificate: File | null,
   certificate_contents: string | null
 };
-
-const AppContext = React.createContext<Partial<AppContextProps>>({});
 
 class FileUploader extends React.Component<FileProps, FileState> {
   static counter = 0;
@@ -163,7 +152,14 @@ class FileUploader extends React.Component<FileProps, FileState> {
   }
 
   handleFileContents(file_contents: string) {
+    try {
+      let parsed: any = JSON.parse(file_contents);
+    } catch (error) {
+      console.log("file isn't JSON");
+      return;
+    }
     this.setState({certificate_contents: file_contents});
+    this.props.contentBubbler(this.state.certificate_contents || "");
   }
 
   componentDidMount() {
@@ -185,6 +181,7 @@ class FileUploader extends React.Component<FileProps, FileState> {
       <FileUploaderPresentationalComponent
         dragging={this.state.dragging}
         certificate={this.state.certificate}
+        certificate_contents={this.state.certificate_contents}
         onSelectFileClick={this.onSelectFileClick}
         onDrag={this.overrideEventDefaults}
         onDragStart={this.overrideEventDefaults}
@@ -202,6 +199,7 @@ class FileUploader extends React.Component<FileProps, FileState> {
 type PresentationalProps = {
   dragging: boolean;
   certificate: File | null;
+  certificate_contents: string | null;
   onSelectFileClick: () => void;
   onDrag: (event: React.DragEvent<HTMLDivElement>) => void;
   onDragStart: (event: React.DragEvent<HTMLDivElement>) => void;
@@ -212,12 +210,14 @@ type PresentationalProps = {
   onDrop: (event: React.DragEvent<HTMLDivElement>) => void;
 };
 
-export const FileUploaderPresentationalComponent: React.FunctionComponent<
+
+const FileUploaderPresentationalComponent: React.FunctionComponent<
   PresentationalProps
 > = props => {
   const {
     dragging,
     certificate,
+    certificate_contents,
     onSelectFileClick,
     onDrag,
     onDragStart,
@@ -225,7 +225,7 @@ export const FileUploaderPresentationalComponent: React.FunctionComponent<
     onDragOver,
     onDragEnter,
     onDragLeave,
-    onDrop
+    onDrop,
   } = props;
 
   let uploaderClasses = "file-uploader";
@@ -247,33 +247,35 @@ export const FileUploaderPresentationalComponent: React.FunctionComponent<
       onDrop={onDrop}
     >
       <div className="file-uploader__contents">
-        <span className="file-uploader__file-name">{fileName}</span>
+        <span onChange={() => {console.log("changed temprature")}} className="file-uploader__file-name">{fileName}</span>
         <span>Drop your file here.</span>
       </div>
     </div>
   );
 };
 
-
-
-type AppContextProps = {
+type AppState = {
   certificate: File | null,
-  certificate_contents: string | null
-};
+  certificate_contents: string | null,
+}
 
 
-class App extends React.Component<{},{}> {
+class App extends React.Component<{}, AppState> {
+  constructor(props: {}) {
+    super({});
+    this.state = { certificate: null, certificate_contents: null};
+  }
+
+  sourceContent = (input_content: string) => {
+    this.setState({ certificate_contents: input_content });
+  };
+
   render(){
     return (
       <div className="App">
         <header className="App-header">
-          <AppContext.Provider value = { {
-            certificate: null,
-            certificate_contents: null
-          }}>
-            <DocumentIntegrity document={cert}/>
-            <FileUploader />
-          </AppContext.Provider>
+            <DocumentIntegrity certificate_contents={this.state.certificate_contents || ""}/>
+            <FileUploader contentBubbler={this.sourceContent}/>
         </header>
       </div>
     );
