@@ -24,6 +24,10 @@
   font-size: medium;
 }
 
+.hide {
+  display: none;
+}
+
 .DropContainer {
   flex-basis: 40%;
   border-width: 0.5px;
