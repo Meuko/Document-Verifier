@@ -1,39 +1,49 @@
-import React, { useContext } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import { render } from '@testing-library/react';
-import { ArrowFunction, collapseTextChangeRangesAcrossMultipleVersions } from 'typescript';
-
+import React, { useState } from "react";
+import {
+  getData,
+  verifySignature,
+  utils,
+  validateSchema,
+} from "@govtechsg/open-attestation";
+import "./App.css";
+import { render } from "@testing-library/react";
+import { Certificate } from "crypto";
 
 const { verify, isValid } = require("@govtechsg/oa-verify");
 
 type IntegrityProps = {
-  certificate_contents: string | null
+  certificate_contents: string | null;
+  certificate_file: File | null;
 };
 type IntegrityState = {
-  document_integrity: boolean,
-  document_status: boolean,
-  issuer_identity: boolean,
-  file: string | null,
-}
+  document_integrity: boolean;
+  document_status: boolean;
+  issuer_identity: boolean;
+  file: string | null;
+};
 
-class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> {
+class DocumentIntegrity extends React.Component<
+  IntegrityProps,
+  IntegrityState
+> {
   static init: boolean = true;
   myRef: React.RefObject<any>;
-  
-  constructor(props: any) {
+
+  constructor(props: IntegrityProps) {
     super(props);
     this.state = {
       document_integrity: false,
       document_status: false,
       issuer_identity: false,
-      file: null
+      file: null,
     };
-   this.myRef = React.createRef(); 
+    this.myRef = React.createRef();
   }
 
   verify_document() {
-    verify(JSON.parse(this.props.certificate_contents!), { network: "ropsten" }).then((fragments: any) => {
+    verify(JSON.parse(this.props.certificate_contents!), {
+      network: "ropsten",
+    }).then((fragments: any) => {
       this.setState({
         document_integrity: isValid(fragments, ["DOCUMENT_INTEGRITY"]),
         document_status: isValid(fragments, ["DOCUMENT_STATUS"]),
@@ -49,13 +59,13 @@ class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> 
 
   update_document(file_contents: string) {
     this.setState({
-      file: file_contents
+      file: file_contents,
     });
   }
 
   render() {
     let regularStyle = "DocumentIntegrity-Header";
-    let errorStyle = "DocumentIntegrity-Header-Invalid"
+    let errorStyle = "DocumentIntegrity-Header-Invalid";
     if (this.props.certificate_contents == null) {
       regularStyle += " hide";
     } else {
@@ -64,13 +74,25 @@ class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> 
 
     return (
       <div className="DocumentIntegrity">
-        <header className={regularStyle} >
-        <p>{(this.state.document_integrity) ? "This document has not been tampered with." : "This document has been tampered with."}</p>
-        <p>{(this.state.document_status) ? "This document has been issued." : "This document has not been issued."}</p>
-        <p>{(this.state.issuer_identity) ? "Document issuer has been identified" : "Document issuer has not been identified."}</p>
+        <header className={regularStyle}>
+          <p>
+            {this.state.document_integrity
+              ? "This document has not been tampered with."
+              : "This document has been tampered with."}
+          </p>
+          <p>
+            {this.state.document_status
+              ? "This document has been issued."
+              : "This document has not been issued."}
+          </p>
+          <p>
+            {this.state.issuer_identity
+              ? "Document issuer has been identified"
+              : "Document issuer has not been identified."}
+          </p>
         </header>
         <header className={errorStyle}>
-        <p>Please upload a valid JSON certificate.</p>
+          <p>Please upload a valid JSON certificate.</p>
         </header>
       </div>
     );
@@ -78,13 +100,14 @@ class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> 
 }
 
 type FileProps = {
-  contentBubbler: (a: string | null) => void
+  contentBubbler: (a: string | null) => void;
+  fileBubbler: (a: File) => void;
 };
 
 type FileState = {
-  dragging: boolean,
-  certificate: File | null,
-  certificate_contents: string | null
+  dragging: boolean;
+  certificate: File | null;
+  certificate_contents: string | null;
 };
 
 class FileUploader extends React.Component<FileProps, FileState> {
@@ -93,7 +116,11 @@ class FileUploader extends React.Component<FileProps, FileState> {
 
   constructor(props: FileProps) {
     super(props);
-    this.state = { dragging: false, certificate: null, certificate_contents: null};
+    this.state = {
+      dragging: false,
+      certificate: null,
+      certificate_contents: null,
+    };
   }
 
   dragEventCounter = 0;
@@ -127,11 +154,9 @@ class FileUploader extends React.Component<FileProps, FileState> {
     this.setState({ dragging: false });
 
     if (event.dataTransfer.files && event.dataTransfer.files[0]) {
-      this.setState(
-        { 
-          certificate: event.dataTransfer.files[0],
-        }
-      );
+      this.setState({
+        certificate: event.dataTransfer.files[0],
+      });
 
       this.readFileContents(event.dataTransfer.files[0]);
     }
@@ -152,29 +177,32 @@ class FileUploader extends React.Component<FileProps, FileState> {
     }
   };
 
-  readFileContents (file: File) {
-      let data_reader: FileReader = new FileReader();
-      
-       data_reader.onload = (e: any) => {
-        let result: string = e.target.result.replace(new RegExp('data:.*\/.*,'), '');
-        this.handleFileContents(new Buffer(result, 'base64').toString('ascii'));
-      };
+  readFileContents(file: File) {
+    let data_reader: FileReader = new FileReader();
 
-      data_reader.readAsDataURL(file);
+    data_reader.onload = (e: any) => {
+      let result: string = e.target.result.replace(
+        new RegExp("data:.*/.*,"),
+        ""
+      );
+      this.handleFileContents(new Buffer(result, "base64").toString("ascii"));
+      this.props.fileBubbler(file);
+    };
+
+    data_reader.readAsDataURL(file);
   }
 
   handleFileContents(file_contents: string) {
     let parsed: Object | null;
     try {
       parsed = JSON.parse(file_contents);
-      this.setState({certificate_contents: file_contents});
+      this.setState({ certificate_contents: file_contents });
       this.props.contentBubbler(this.state.certificate_contents || null);
     } catch (error) {
       parsed = null;
-    this.setState({certificate_contents: null});
-    this.props.contentBubbler(null);
+      this.setState({ certificate_contents: null });
+      this.props.contentBubbler(null);
     }
-
   }
 
   componentDidMount() {
@@ -205,8 +233,7 @@ class FileUploader extends React.Component<FileProps, FileState> {
         onDragEnter={this.dragenterListener}
         onDragLeave={this.dragleaveListener}
         onDrop={this.dropListener}
-      >
-      </FileUploaderPresentationalComponent>
+      ></FileUploaderPresentationalComponent>
     );
   }
 }
@@ -225,10 +252,9 @@ type PresentationalProps = {
   onDrop: (event: React.DragEvent<HTMLDivElement>) => void;
 };
 
-
-const FileUploaderPresentationalComponent: React.FunctionComponent<
-  PresentationalProps
-> = props => {
+const FileUploaderPresentationalComponent: React.FunctionComponent<PresentationalProps> = (
+  props
+) => {
   const {
     dragging,
     certificate,
@@ -270,31 +296,36 @@ const FileUploaderPresentationalComponent: React.FunctionComponent<
 };
 
 type AppState = {
-  certificate: File | null,
-  certificate_contents: string | null,
-}
+  certificate: File | null;
+  certificate_contents: string | null;
+};
 
 
-class App extends React.Component<{}, AppState> {
-  constructor(props: {}) {
-    super({});
-    this.state = { certificate: null, certificate_contents: null};
+const App: React.FunctionComponent = () => {
+  const [certificate, setCertificate] = useState<File | null>(null);
+  const [certificateContents, setCertificateContents] = useState<string | null>(null);
+
+  const sourceFile = (inputFile: File | null) => {
+    setCertificate(inputFile);
+  }
+  const sourceContent = (inputContent: string | null) =>  {
+    setCertificateContents(inputContent);
   }
 
-  sourceContent = (input_content: string | null) => {
-    this.setState({ certificate_contents: input_content });
-  };
-
-  render(){
-    return (
+  return (
       <div className="App">
         <header className="App-header">
-            <DocumentIntegrity certificate_contents={this.state.certificate_contents || null}/>
-            <FileUploader contentBubbler={this.sourceContent}/>
+          <DocumentIntegrity
+            certificate_file={certificate || null}
+            certificate_contents={certificateContents || null}
+          />
+          <FileUploader
+            fileBubbler={sourceFile}
+            contentBubbler={sourceContent}
+          />
         </header>
       </div>
-    );
-  }
-}
+  );
+};
 
 export default App;
