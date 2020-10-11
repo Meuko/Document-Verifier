@@ -8,17 +8,14 @@ import { FrameActions, FrameConnector, HostActionsHandler } from "@govtechsg/dec
 
 
 interface AppProps {
-  documents: {
-    name: string;
     document: any;
-  }[];
 }
 
-export const Viewer: React.FunctionComponent<AppProps> = ({ documents }): React.ReactElement => {
+export const Viewer: React.FunctionComponent<AppProps> = ({ document }): React.ReactElement => {
   const [toFrame, setToFrame] = useState<HostActionsHandler>();
   const [height, setHeight] = useState(50);
   const [templates, setTemplates] = useState<{ id: string; label: string }[]>([]);
-  const [document, setDocument] = useState<{ name: string; document: any }>();
+  const [certificate, setCertificate] = useState<{ name: string; document: any }>();
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const fn = useCallback((toFrame: HostActionsHandler) => {
     setToFrame(() => toFrame);
@@ -47,6 +44,12 @@ export const Viewer: React.FunctionComponent<AppProps> = ({ documents }): React.
     }
   };
 
+  useEffect(() => { 
+    if(document !== null) {
+        setCertificate(document);
+    }
+  }, []);
+
   useEffect(() => {
     if (toFrame && document) {
       toFrame({
@@ -70,32 +73,6 @@ export const Viewer: React.FunctionComponent<AppProps> = ({ documents }): React.
   return (
     <div>
       <styleObject.FrameContainer>
-        <styleObject.DocumentsContainer>
-          <div
-            css={cssObject.firstStyle}
-          >
-            Documents
-          </div>
-          {documents.length === 0 && <div>Please configure the application and provide at least one document</div>}
-          {documents.map((d, index) => {
-            return (
-              <div key={index} className={`document ${document === d ? "active" : ""}`} onClick={() => 
-                {
-                  setDocument(d);
-                }
-              }>
-                {d.name || "Temp Document"}
-              </div>
-            );
-          })}
-        </styleObject.DocumentsContainer>
-        {!document && (
-          <div
-            css={cssObject.secondStyle}
-          >
-            Please select a document on the left bar
-          </div>
-        )}
         <div
           css={css`
             width: 100%;

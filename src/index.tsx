@@ -8,13 +8,10 @@ import { getData } from '@govtechsg/open-attestation';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Viewer documents={
-      [
+    <Viewer document={
         {
-        name: "Dummy Document", 
         document: getData(require("./WrappedDocuments/certificate-valid-1.json"))
         }
-      ]
     }
     />
   </React.StrictMode>,
