@@ -2,11 +2,21 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
+import Viewer from './Components/Viewer';
 import * as serviceWorker from './serviceWorker';
+import { getData } from '@govtechsg/open-attestation';
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Viewer documents={
+      [
+        {
+        name: "Dummy Document", 
+        document: getData(require("./WrappedDocuments/certificate-valid-1.json"))
+        }
+      ]
+    }
+    />
   </React.StrictMode>,
   document.getElementById('root')
 );
