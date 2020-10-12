@@ -11,7 +11,10 @@ import {
 } from "@govtechsg/decentralized-renderer-react-components";
 
 interface AppProps {
-  document: any;
+  document: {
+    name: string;
+    document: any;
+  };
 }
 
 export const Viewer: React.FunctionComponent<AppProps> = ({
@@ -26,6 +29,7 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
     name: string;
     document: any;
   }>();
+
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
   const fn = useCallback((toFrame: HostActionsHandler) => {
     setToFrame(() => toFrame);
@@ -55,12 +59,15 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
   };
 
   useEffect(() => {
+    if (document == null) return;
     if (document !== null) {
       setCertificate(document);
+      console.log(document.document);
     }
   }, []);
 
   useEffect(() => {
+    if (document == null) return;
     if (toFrame && document) {
       toFrame({
         type: "RENDER_DOCUMENT",
@@ -72,6 +79,7 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
   }, [toFrame, document]);
 
   useEffect(() => {
+    if (document == null) return;
     if (toFrame && selectedTemplate) {
       toFrame({
         type: "SELECT_TEMPLATE",

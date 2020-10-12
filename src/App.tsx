@@ -11,6 +11,7 @@ import Viewer from "./Components/Viewer";
 import { render } from "@testing-library/react";
 import { Certificate } from "crypto";
 import { ArrowFunction } from "typescript";
+import { stringify } from "querystring";
 
 const { verify, isValid } = require("@govtechsg/oa-verify");
 
@@ -103,7 +104,7 @@ class DocumentIntegrity extends React.Component<
 }
 
 type FileProps = {
-  contentBubbler: (a: string | null) => void;
+  contentBubbler: (a: string) => void;
   fileBubbler: (a: File) => void;
 };
 
@@ -170,8 +171,13 @@ class FileUploader extends React.Component<FileProps, FileState> {
         // Once the file has been read our state should be set,
         // this is the location where we should bubble up our contents
         // to the top component.
-        this.handleFileContents(this.state.certificate_contents!);
-        this.props.fileBubbler(this.state.certificate!);
+        if (
+          this.state.certificate_contents !== null &&
+          this.state.certificate !== null
+        ) {
+          this.handleFileContents(this.state.certificate_contents);
+          this.props.fileBubbler(this.state.certificate);
+        }
       });
     }
   };
@@ -199,7 +205,8 @@ class FileUploader extends React.Component<FileProps, FileState> {
       // TODO::(Hamza) - Confirm that this is a valid OAV2WRAPPED document. OA's function as
       // of now doesn't work.
       // https://github.com/Open-Attestation/open-attestation/issues/132
-      this.props.contentBubbler(this.state.certificate_contents || null);
+
+      this.props.contentBubbler(this.state.certificate_contents!);
     } catch (error) {
       // File couldn't be parsed, invalid JSON, show an error.
       console.log("ERROR : JSON couldn't be parsed.");
@@ -318,8 +325,8 @@ type AppState = {
 
 const App: React.FunctionComponent = () => {
   const [certificate, setCertificate] = useState<File | null>(null);
-  const [certificateContents, setCertificateContents] = useState<string | null>(
-    null
+  const [certificateContents, setCertificateContents] = useState<string>(
+    require("./WrappedDocuments/certificate-valid-1.json")
   );
   const [viewSwitchIndicator, setViewSwitchIndicator] = useState<boolean>(
     false
@@ -328,7 +335,7 @@ const App: React.FunctionComponent = () => {
   const sourceFile = (inputFile: File | null) => {
     setCertificate(inputFile);
   };
-  const sourceContent = (inputContent: string | null) => {
+  const sourceContent = (inputContent: string) => {
     setCertificateContents(inputContent);
   };
 
@@ -370,11 +377,16 @@ const App: React.FunctionComponent = () => {
             (!viewSwitchIndicator ? "Hidden-container" : "")
           }
         >
-          <Viewer
-            document={{
-              document: getData({ data: certificateContents }),
-            }}
-          />
+          {viewSwitchIndicator ? (
+            <Viewer
+              document={{
+                name: "Current File",
+                document: getData(JSON.parse(certificateContents)),
+              }}
+            />
+          ) : (
+            <div></div>
+          )}
         </div>
       </header>
     </div>
