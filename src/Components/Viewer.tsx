@@ -62,7 +62,6 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
     if (document == null) return;
     if (document !== null) {
       setCertificate(document);
-      console.log(document.document);
     }
   }, []);
 
@@ -89,7 +88,11 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
   }, [selectedTemplate, toFrame]);
 
   return (
-    <div>
+    <div 
+          css={css`
+            width: 100%;
+          `}
+        >
       <styleObject.FrameContainer>
         <div
           css={css`
@@ -120,7 +123,6 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
               dispatch={fromFrame}
               onConnected={fn}
               css={css`
-                margin: auto;
                 max-width: 1120px;
                 border: 0;
                 width: 100%;

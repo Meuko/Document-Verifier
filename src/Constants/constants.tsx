@@ -81,6 +81,8 @@ export const cssObject = {
               border: 1px solid #e2e8f0;
               border-top: none;
               padding: 2rem;
-              margin-right: 0.5rem;
+              display: flex;
+              align-items: center;
+              justify-content: center;
             `
 };
