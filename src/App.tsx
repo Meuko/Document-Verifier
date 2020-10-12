@@ -6,6 +6,8 @@ import {
   validateSchema,
 } from "@govtechsg/open-attestation";
 import "./App.css";
+import Viewer from "./Components/Viewer";
+
 import { render } from "@testing-library/react";
 import { Certificate } from "crypto";
 import { ArrowFunction } from "typescript";
@@ -182,7 +184,9 @@ class FileUploader extends React.Component<FileProps, FileState> {
         new RegExp("data:.*/.*,"),
         ""
       );
-      this.setState({certificate_contents: new Buffer(result, "base64").toString("ascii")});
+      this.setState({
+        certificate_contents: new Buffer(result, "base64").toString("ascii"),
+      });
       callback();
     };
     data_reader.readAsDataURL(file);
@@ -312,17 +316,21 @@ type AppState = {
   certificate_contents: string | null;
 };
 
-
 const App: React.FunctionComponent = () => {
   const [certificate, setCertificate] = useState<File | null>(null);
-  const [certificateContents, setCertificateContents] = useState<string | null>(null);
+  const [certificateContents, setCertificateContents] = useState<string | null>(
+    null
+  );
+  const [viewSwitchIndicator, setViewSwitchIndicator] = useState<boolean>(
+    false
+  );
 
   const sourceFile = (inputFile: File | null) => {
     setCertificate(inputFile);
-  }
-  const sourceContent = (inputContent: string | null) =>  {
+  };
+  const sourceContent = (inputContent: string | null) => {
     setCertificateContents(inputContent);
-  }
+  };
 
   const Initial: React.MutableRefObject<boolean> = useRef(true);
 
@@ -332,12 +340,21 @@ const App: React.FunctionComponent = () => {
       return;
     }
 
-    console.log("Certificate has changed");
+    if (certificate !== null) {
+      // Certificate has been changed, time to load the document viewer.
+      setViewSwitchIndicator(true);
+    }
   }, [certificate]);
 
   return (
-      <div className="App">
-        <header className="App-header">
+    <div className="App">
+      <header className="General-container Header-container">
+        <div
+          className={
+            "General-container " +
+            (viewSwitchIndicator ? "Hidden-container" : "")
+          }
+        >
           <DocumentIntegrity
             certificate_file={certificate || null}
             certificate_contents={certificateContents || null}
@@ -346,8 +363,23 @@ const App: React.FunctionComponent = () => {
             fileBubbler={sourceFile}
             contentBubbler={sourceContent}
           />
-        </header>
-      </div>
+        </div>
+        <div
+          className={
+            "General-container " +
+            (!viewSwitchIndicator ? "Hidden-container" : "")
+          }
+        >
+          <Viewer
+            document={{
+              document: getData(
+                require("./WrappedDocuments/certificate-valid-1.json")
+              ),
+            }}
+          />
+        </div>
+      </header>
+    </div>
   );
 };
 

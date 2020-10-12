@@ -2,16 +2,23 @@
   text-align: center;
 }
 
-.App-header {
-  background-color: #282c34;
+.General-container {
   min-height: 100vh;
+  min-width: 100vw;
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-  font-size: calc(10px + 2vmin);
+}
+
+.Header-container {
+  background-color: #222;
   color: white;
+}
+
+.Hidden-container {
+  display: none;
 }
 
 .DocumentIntegrity {
