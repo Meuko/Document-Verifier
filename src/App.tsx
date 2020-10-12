@@ -81,18 +81,18 @@ class DocumentIntegrity extends React.Component<
         <header className={regularStyle}>
           <p>
             {this.state.document_integrity
-              ? "This document has not been tampered with."
-              : "This document has been tampered with."}
+              ? "Tampered: NO"
+              : "Tampered: YES"}
           </p>
           <p>
             {this.state.document_status
-              ? "This document has been issued."
-              : "This document has not been issued."}
+              ? "Issued: YES"
+              : "Issued: NO"}
           </p>
           <p>
             {this.state.issuer_identity
-              ? "Document issuer has been identified"
-              : "Document issuer has not been identified."}
+              ? "Issuer: IDENTIFIED"
+              : "Issuer: UNIDENTIFIED"}
           </p>
         </header>
         <header className={errorStyle}>
@@ -362,10 +362,6 @@ const App: React.FunctionComponent = () => {
             (viewSwitchIndicator ? "Hidden-container" : "")
           }
         >
-          <DocumentIntegrity
-            certificate_file={certificate || null}
-            certificate_contents={certificateContents || null}
-          />
           <FileUploader
             fileBubbler={sourceFile}
             contentBubbler={sourceContent}
@@ -374,16 +370,18 @@ const App: React.FunctionComponent = () => {
         <div
           className={
             "General-container " +
-            (!viewSwitchIndicator ? "Hidden-container" : "")
+            (!viewSwitchIndicator ? "Hidden-container" : "test-flex")
           }
         >
           {viewSwitchIndicator ? (
-            <Viewer
+            <><Viewer
               document={{
                 name: "Current File",
                 document: getData(JSON.parse(certificateContents)),
-              }}
-            />
+              }} />
+              <DocumentIntegrity
+                certificate_file={certificate || null}
+                certificate_contents={certificateContents || null} /></>
           ) : (
             <div></div>
           )}

@@ -64,3 +64,8 @@
 .file-uploader__file-name {
   font-weight: 700;
 }
+
+.test-flex {
+  display: flex;
+  flex-direction: row;
+}

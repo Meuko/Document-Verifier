@@ -96,7 +96,7 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
       <styleObject.FrameContainer>
         <div
           css={css`
-            width: 100%;
+            width: 80%;
             display: ${document ? "block" : "none"};
           `}
         >
