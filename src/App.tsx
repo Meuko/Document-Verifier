@@ -344,7 +344,7 @@ const App: React.FunctionComponent = () => {
       // Certificate has been changed, time to load the document viewer.
       setViewSwitchIndicator(true);
     }
-  }, [certificate]);
+  }, [certificate, certificateContents]);
 
   return (
     <div className="App">
@@ -372,9 +372,7 @@ const App: React.FunctionComponent = () => {
         >
           <Viewer
             document={{
-              document: getData(
-                require("./WrappedDocuments/certificate-valid-1.json")
-              ),
+              document: getData({ data: certificateContents }),
             }}
           />
         </div>
