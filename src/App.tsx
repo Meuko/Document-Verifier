@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   getData,
   verifySignature,
@@ -8,6 +8,7 @@ import {
 import "./App.css";
 import { render } from "@testing-library/react";
 import { Certificate } from "crypto";
+import { ArrowFunction } from "typescript";
 
 const { verify, isValid } = require("@govtechsg/oa-verify");
 
@@ -153,14 +154,53 @@ class FileUploader extends React.Component<FileProps, FileState> {
     this.dragEventCounter = 0;
     this.setState({ dragging: false });
 
+    // Make sure that the uploaded file is a JSON file.
+    if (event.dataTransfer.files[0].type !== "application/json") return;
+
     if (event.dataTransfer.files && event.dataTransfer.files[0]) {
       this.setState({
         certificate: event.dataTransfer.files[0],
       });
 
-      this.readFileContents(event.dataTransfer.files[0]);
+      // At this point we should read the file's contents, but since the onLoad method is asynchronous,
+      // we will have to pass a callback, which handles sending the contents to the top component.
+      this.readFileContents(event.dataTransfer.files[0], () => {
+        // Once the file has been read our state should be set,
+        // this is the location where we should bubble up our contents
+        // to the top component.
+        this.handleFileContents(this.state.certificate_contents!);
+        this.props.fileBubbler(this.state.certificate!);
+      });
     }
   };
+
+  readFileContents(file: File, callback: Function) {
+    let data_reader: FileReader = new FileReader();
+
+    data_reader.onload = (e: any) => {
+      let result: string = e.target.result.replace(
+        new RegExp("data:.*/.*,"),
+        ""
+      );
+      this.setState({certificate_contents: new Buffer(result, "base64").toString("ascii")});
+      callback();
+    };
+    data_reader.readAsDataURL(file);
+  }
+
+  handleFileContents(file_contents: string) {
+    try {
+      // If parsing the JSON completes succesfully, it means we have a valid piece of JSON.
+      let parsed_file_contents = JSON.parse(file_contents);
+      // TODO::(Hamza) - Confirm that this is a valid OAV2WRAPPED document. OA's function as
+      // of now doesn't work.
+      // https://github.com/Open-Attestation/open-attestation/issues/132
+      this.props.contentBubbler(this.state.certificate_contents || null);
+    } catch (error) {
+      // File couldn't be parsed, invalid JSON, show an error.
+      console.log("ERROR : JSON couldn't be parsed.");
+    }
+  }
 
   overrideEventDefaults = (event: Event | React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -176,34 +216,6 @@ class FileUploader extends React.Component<FileProps, FileState> {
       this.setState({ certificate: event.target.files[0] });
     }
   };
-
-  readFileContents(file: File) {
-    let data_reader: FileReader = new FileReader();
-
-    data_reader.onload = (e: any) => {
-      let result: string = e.target.result.replace(
-        new RegExp("data:.*/.*,"),
-        ""
-      );
-      this.handleFileContents(new Buffer(result, "base64").toString("ascii"));
-      this.props.fileBubbler(file);
-    };
-
-    data_reader.readAsDataURL(file);
-  }
-
-  handleFileContents(file_contents: string) {
-    let parsed: Object | null;
-    try {
-      parsed = JSON.parse(file_contents);
-      this.setState({ certificate_contents: file_contents });
-      this.props.contentBubbler(this.state.certificate_contents || null);
-    } catch (error) {
-      parsed = null;
-      this.setState({ certificate_contents: null });
-      this.props.contentBubbler(null);
-    }
-  }
 
   componentDidMount() {
     window.addEventListener("dragover", (event: Event) => {
@@ -311,6 +323,17 @@ const App: React.FunctionComponent = () => {
   const sourceContent = (inputContent: string | null) =>  {
     setCertificateContents(inputContent);
   }
+
+  const Initial: React.MutableRefObject<boolean> = useRef(true);
+
+  useEffect(() => {
+    if (Initial.current) {
+      Initial.current = false;
+      return;
+    }
+
+    console.log("Certificate has changed");
+  }, [certificate]);
 
   return (
       <div className="App">

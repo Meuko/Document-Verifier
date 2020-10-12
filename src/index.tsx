@@ -6,14 +6,21 @@ import Viewer from './Components/Viewer';
 import * as serviceWorker from './serviceWorker';
 import { getData } from '@govtechsg/open-attestation';
 
+//ReactDOM.render(
+  //<React.StrictMode>
+    //<Viewer document={
+        //{
+        //document: getData(require("./WrappedDocuments/certificate-valid-1.json"))
+        //}
+    //}
+    ///>
+  //</React.StrictMode>,
+  //document.getElementById('root')
+//);
+
 ReactDOM.render(
   <React.StrictMode>
-    <Viewer document={
-        {
-        document: getData(require("./WrappedDocuments/certificate-valid-1.json"))
-        }
-    }
-    />
+    <App />
   </React.StrictMode>,
   document.getElementById('root')
 );
