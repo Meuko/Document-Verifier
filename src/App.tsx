@@ -4,6 +4,7 @@ import "./App.css";
 import "font-awesome/css/font-awesome.css";
 
 import Viewer from "./Components/Viewer";
+import { servicesVersion } from "typescript";
 
 const { verify, isValid } = require("@govtechsg/oa-verify");
 
@@ -231,9 +232,6 @@ class FileUploader extends React.Component<FileProps, FileState> {
     return (
       <FileUploaderPresentationalComponent
         dragging={this.state.dragging}
-        certificate={this.state.certificate}
-        certificate_contents={this.state.certificate_contents}
-        onSelectFileClick={this.onSelectFileClick}
         onDrag={this.overrideEventDefaults}
         onDragStart={this.overrideEventDefaults}
         onDragEnd={this.overrideEventDefaults}
@@ -248,7 +246,6 @@ class FileUploader extends React.Component<FileProps, FileState> {
 
 type PresentationalProps = {
   dragging: boolean;
-  certificate: File | null;
   onDrag: (event: React.DragEvent<HTMLDivElement>) => void;
   onDragStart: (event: React.DragEvent<HTMLDivElement>) => void;
   onDragEnd: (event: React.DragEvent<HTMLDivElement>) => void;
@@ -263,7 +260,6 @@ const FileUploaderPresentationalComponent: React.FunctionComponent<Presentationa
 ) => {
   const {
     dragging,
-    certificate,
     onDrag,
     onDragStart,
     onDragEnd,
@@ -273,12 +269,11 @@ const FileUploaderPresentationalComponent: React.FunctionComponent<Presentationa
     onDrop,
   } = props;
 
+
   let uploaderClasses = "file-uploader";
   if (dragging) {
     uploaderClasses += " file-uploader--dragging";
   }
-
-  const fileName = certificate ? certificate.name : null;
 
   return (
     <div
@@ -292,7 +287,6 @@ const FileUploaderPresentationalComponent: React.FunctionComponent<Presentationa
       onDrop={onDrop}
     >
       <div className="file-uploader__contents">
-        <span className="file-uploader__file-name">{fileName}</span>
         <span>Drop your file here.</span>
       </div>
     </div>
@@ -320,6 +314,8 @@ const App: React.FunctionComponent = () => {
     setCertificateContents(inputContent);
   };
   const resetState = () => {
+    // This function is used when a certificate has been displayed and the user wants to
+    // return to the first view to try and verify another certificate.
     setViewSwitchIndicator(false);
     setCertificate(null);
     setCertificateContents("");
