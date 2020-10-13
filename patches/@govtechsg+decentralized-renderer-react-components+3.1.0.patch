@@ -1,0 +1,13 @@
+diff --git a/node_modules/@govtechsg/decentralized-renderer-react-components/src/components/renderer/FramedDocumentRenderer.tsx b/node_modules/@govtechsg/decentralized-renderer-react-components/src/components/renderer/FramedDocumentRenderer.tsx
+index e7c5141..f0e8d40 100644
+--- a/node_modules/@govtechsg/decentralized-renderer-react-components/src/components/renderer/FramedDocumentRenderer.tsx
++++ b/node_modules/@govtechsg/decentralized-renderer-react-components/src/components/renderer/FramedDocumentRenderer.tsx
+@@ -90,7 +90,7 @@ export function FramedDocumentRenderer<D extends OpenAttestationDocument = OpenA
+     <DomListener onUpdate={height => toHost.current(updateHeight(height))}>
+       <HostConnector dispatch={dispatch} onConnected={onConnected}>
+         {document && Template && (
+-          <div className="frameless-tabs" id="rendered-certificate">
++          <div >
+             <Template
+               document={document}
+               wrappedDocument={rawDocument}

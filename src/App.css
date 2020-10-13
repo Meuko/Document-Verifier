@@ -22,11 +22,17 @@
 }
 
 .DocumentIntegrity {
-  flex-basis: 40%;
+  flex-basis: content;
   text-align: left;
 }
 
-.DocumentIntegrity p {
+.StatusContainer {
+  display: flex;
+  flex-flow: column;
+  flex-wrap: wrap;
+}
+
+.DocumentIntegrity i {
   margin: 0;
   font-size: medium;
 }

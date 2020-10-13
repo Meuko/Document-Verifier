@@ -1,35 +1,24 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-  getData,
-  verifySignature,
-  utils,
-  validateSchema,
-} from "@govtechsg/open-attestation";
+import { getData } from "@govtechsg/open-attestation";
 import "./App.css";
-import Viewer from "./Components/Viewer";
+import "font-awesome/css/font-awesome.css";
 
-import { render } from "@testing-library/react";
-import { Certificate } from "crypto";
-import { ArrowFunction } from "typescript";
-import { stringify } from "querystring";
+import Viewer from "./Components/Viewer";
 
 const { verify, isValid } = require("@govtechsg/oa-verify");
 
 type IntegrityProps = {
-  certificate_contents: string | null;
-  certificate_file: File | null;
-};
+  certificate_contents: string;
+  certificate_resetter: Function;
+}
+
 type IntegrityState = {
   document_integrity: boolean;
   document_status: boolean;
   issuer_identity: boolean;
-  file: string | null;
 };
 
-class DocumentIntegrity extends React.Component<
-  IntegrityProps,
-  IntegrityState
-> {
+class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> {
   static init: boolean = true;
   myRef: React.RefObject<any>;
 
@@ -39,7 +28,6 @@ class DocumentIntegrity extends React.Component<
       document_integrity: false,
       document_status: false,
       issuer_identity: false,
-      file: null,
     };
     this.myRef = React.createRef();
   }
@@ -56,15 +44,9 @@ class DocumentIntegrity extends React.Component<
     });
   }
 
-  componentDidUpdate() {
+  componentDidMount() {
     if (this.props.certificate_contents == null) return;
     this.verify_document();
-  }
-
-  update_document(file_contents: string) {
-    this.setState({
-      file: file_contents,
-    });
   }
 
   render() {
@@ -79,21 +61,24 @@ class DocumentIntegrity extends React.Component<
     return (
       <div className="DocumentIntegrity">
         <header className={regularStyle}>
-          <p>
-            {this.state.document_integrity
-              ? "Tampered: NO"
-              : "Tampered: YES"}
-          </p>
-          <p>
-            {this.state.document_status
-              ? "Issued: YES"
-              : "Issued: NO"}
-          </p>
-          <p>
-            {this.state.issuer_identity
-              ? "Issuer: IDENTIFIED"
-              : "Issuer: UNIDENTIFIED"}
-          </p>
+          <div className="StatusContainer">
+            {this.state.document_integrity ? (
+              <i className="fa fa-check-circle">Tampered</i>
+            ) : (
+              <i className="fa fa-times-circle">Tampered</i>
+            )}
+            {this.state.document_status ? (
+              <i className="fa fa-check-circle">Issued</i>
+            ) : (
+              <i className="fa fa-times-circle">Issued</i>
+            )}
+            {this.state.issuer_identity ? (
+              <i className="fa fa-check-circle">Issuer Identified</i>
+            ) : (
+              <i className="fa fa-times-circle">Issuer Identified</i>
+            )}
+          </div>
+          <button onClick={(e: any) => {this.props.certificate_resetter()}}>Click</button>
         </header>
         <header className={errorStyle}>
           <p>Please upload a valid JSON certificate.</p>
@@ -264,8 +249,6 @@ class FileUploader extends React.Component<FileProps, FileState> {
 type PresentationalProps = {
   dragging: boolean;
   certificate: File | null;
-  certificate_contents: string | null;
-  onSelectFileClick: () => void;
   onDrag: (event: React.DragEvent<HTMLDivElement>) => void;
   onDragStart: (event: React.DragEvent<HTMLDivElement>) => void;
   onDragEnd: (event: React.DragEvent<HTMLDivElement>) => void;
@@ -281,8 +264,6 @@ const FileUploaderPresentationalComponent: React.FunctionComponent<Presentationa
   const {
     dragging,
     certificate,
-    certificate_contents,
-    onSelectFileClick,
     onDrag,
     onDragStart,
     onDragEnd,
@@ -338,6 +319,11 @@ const App: React.FunctionComponent = () => {
   const sourceContent = (inputContent: string) => {
     setCertificateContents(inputContent);
   };
+  const resetState = () => {
+    setViewSwitchIndicator(false);
+    setCertificate(null);
+    setCertificateContents("");
+  }
 
   const Initial: React.MutableRefObject<boolean> = useRef(true);
 
@@ -374,14 +360,18 @@ const App: React.FunctionComponent = () => {
           }
         >
           {viewSwitchIndicator ? (
-            <><Viewer
-              document={{
-                name: "Current File",
-                document: getData(JSON.parse(certificateContents)),
-              }} />
-              <DocumentIntegrity
-                certificate_file={certificate || null}
-                certificate_contents={certificateContents || null} /></>
+            <>
+              <Viewer
+                document={{
+                  name: "Current File",
+                  document: getData(JSON.parse(certificateContents)),
+                }}
+              />
+              <DocumentIntegrity 
+                certificate_contents={certificateContents}
+                certificate_resetter={resetState} 
+              />
+            </>
           ) : (
             <div></div>
           )}
