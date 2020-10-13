@@ -64,22 +64,22 @@ class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> 
         <header className={regularStyle}>
           <div className="StatusContainer">
             {this.state.document_integrity ? (
-              <i className="fa fa-check-circle">Tampered</i>
+              <i className="fa fa-check-circle"> Not tampered with</i>
             ) : (
-              <i className="fa fa-times-circle">Tampered</i>
+              <i className="fa fa-times-circle"> Not tampered with</i>
             )}
             {this.state.document_status ? (
-              <i className="fa fa-check-circle">Issued</i>
+              <i className="fa fa-check-circle"> Has been issued</i>
             ) : (
-              <i className="fa fa-times-circle">Issued</i>
+              <i className="fa fa-times-circle"> Has been issued</i>
             )}
             {this.state.issuer_identity ? (
-              <i className="fa fa-check-circle">Issuer Identified</i>
+              <i className="fa fa-check-circle"> Issuer identified</i>
             ) : (
-              <i className="fa fa-times-circle">Issuer Identified</i>
+              <i className="fa fa-times-circle"> Issuer identified</i>
             )}
+          <button onClick={(e: any) => {this.props.certificate_resetter()}}>Verify another document</button>
           </div>
-          <button onClick={(e: any) => {this.props.certificate_resetter()}}>Click</button>
         </header>
         <header className={errorStyle}>
           <p>Please upload a valid JSON certificate.</p>

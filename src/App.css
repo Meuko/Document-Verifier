@@ -34,7 +34,19 @@
 
 .DocumentIntegrity i {
   margin: 0;
+  padding-top: 3px;
   font-size: medium;
+}
+
+.DocumentIntegrity button {
+  margin-top: 10px;
+  border-radius: 0px;
+  background-color: #222;
+  color: white;
+}
+
+iframe {
+  overflow: hidden;
 }
 
 .hide {

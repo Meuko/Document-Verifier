@@ -96,7 +96,7 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
       <styleObject.FrameContainer>
         <div
           css={css`
-            width: 80%;
+            width: 90%;
             display: ${document ? "block" : "none"};
           `}
         >
@@ -119,7 +119,8 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
           </styleObject.TemplatesContainer>
           <div css={cssObject.fourthStyle}>
             <FrameConnector
-              source="https://www.renderer.mza.jp"
+//              source="https://www.renderer.mza.jp"
+              source="http://localhost:3000/"
               dispatch={fromFrame}
               onConnected={fn}
               css={css`

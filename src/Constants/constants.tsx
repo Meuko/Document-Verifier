@@ -2,7 +2,8 @@ import styled from "@emotion/styled";
 import { css } from "@emotion/core";
 
 export const styleObject = {
-    TemplatesContainer: styled.div``,
+    TemplatesContainer: styled.div`
+    `,
     FrameContainer: styled.div`
         display: flex;
     `,
@@ -63,7 +64,7 @@ export const cssObject = {
                   border-color: #e2e8f0;
                 }
                 li.selected a {
-                  color: #2b6cb0;
+                  color: #222;
                   border-bottom: none;
                   border-left-width: 1px;
                   border-right-width: 1px;
