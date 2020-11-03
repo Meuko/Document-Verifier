@@ -6,6 +6,8 @@ import "font-awesome/css/font-awesome.css";
 import Viewer from "./Components/Viewer";
 import { servicesVersion } from "typescript";
 
+import { encryptString, decryptString } from "@govtechsg/oa-encryption";
+
 const { verify, isValid } = require("@govtechsg/oa-verify");
 
 type IntegrityProps = {
@@ -37,16 +39,31 @@ class DocumentIntegrity extends React.Component<IntegrityProps, IntegrityState> 
     verify(JSON.parse(this.props.certificate_contents!), {
       network: "ropsten",
     }).then((fragments: any) => {
+      // As I understand this, once a document is verified, multiple fragments
+      // are returned; each referring to a specific set of "validity" of the d-
+      // ocument in question. Practically speaking, we're only concerned with
+      // document_integrity. document_status is used to check whether or not
+      // an issuing party has actually issued or revoked the document. issuer_
+      // identity actually checks whether or not the issuer's identity is valid.
+      // https://openattestation.com/docs/component/oa-verify 
       this.setState({
         document_integrity: isValid(fragments, ["DOCUMENT_INTEGRITY"]),
         document_status: isValid(fragments, ["DOCUMENT_STATUS"]),
         issuer_identity: isValid(fragments, ["ISSUER_IDENTITY"]),
       });
     });
+
+    const encrypted_document = encryptString(this.props.certificate_contents);
+    //console.log("Encrypted document", encrypted_document);
+    const decrypted_document = decryptString(encrypted_document);
+    //console.log("Decrypted document", decrypted_document);
+    const clean_document = getData({data: decrypted_document});
   }
 
   componentDidMount() {
     if (this.props.certificate_contents == null) return;
+    // On mounting, if a document is available, verify_document
+    // to populate our state.
     this.verify_document();
   }
 
@@ -142,6 +159,7 @@ class FileUploader extends React.Component<FileProps, FileState> {
     this.overrideEventDefaults(event);
     this.dragEventCounter = 0;
     this.setState({ dragging: false });
+    // File drop happens here.
 
     // Make sure that the uploaded file is a JSON file.
     if (event.dataTransfer.files[0].type !== "application/json") return;
@@ -151,8 +169,10 @@ class FileUploader extends React.Component<FileProps, FileState> {
         certificate: event.dataTransfer.files[0],
       });
 
-      // At this point we should read the file's contents, but since the onLoad method is asynchronous,
-      // we will have to pass a callback, which handles sending the contents to the top component.
+      // At this point we should read the file's contents, but since 
+      // the onLoad method is asynchronous, we will have to pass a c-
+      // allback, which handles sending the contents to the top comp-
+      // onent. This is also called "bubbling" up the content.
       this.readFileContents(event.dataTransfer.files[0], () => {
         // Once the file has been read our state should be set,
         // this is the location where we should bubble up our contents
@@ -170,8 +190,14 @@ class FileUploader extends React.Component<FileProps, FileState> {
 
   readFileContents(file: File, callback: Function) {
     let data_reader: FileReader = new FileReader();
-
+    // Note that here we're simply stating what should happen once
+    // onload happens, this doesn't happen on program load, only once
+    // our reader is fed a file. This is why we're using a callback.
+    // to handle our content bubbling and state changes.
     data_reader.onload = (e: any) => {
+      // Since we're working with base64 format we have to run this
+      // expression, all it does is replace the start of our data
+      // with an empty string, which enables us to decode it.
       let result: string = e.target.result.replace(
         new RegExp("data:.*/.*,"),
         ""
@@ -301,6 +327,7 @@ type AppState = {
 const App: React.FunctionComponent = () => {
   const [certificate, setCertificate] = useState<File | null>(null);
   const [certificateContents, setCertificateContents] = useState<string>(
+    // Placeholder file.
     require("./WrappedDocuments/certificate-valid-1.json")
   );
   const [viewSwitchIndicator, setViewSwitchIndicator] = useState<boolean>(
@@ -321,6 +348,7 @@ const App: React.FunctionComponent = () => {
     setCertificateContents("");
   }
 
+  // Used to skip the initial run of useEffect().
   const Initial: React.MutableRefObject<boolean> = useRef(true);
 
   useEffect(() => {

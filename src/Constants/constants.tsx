@@ -1,6 +1,9 @@
 import styled from "@emotion/styled";
 import { css } from "@emotion/core";
 
+// Basic styling objects used multiple times for styling the forms.
+// Stored here to prevent code bloat in the general files.
+
 export const styleObject = {
     TemplatesContainer: styled.div`
     `,
