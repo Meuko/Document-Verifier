@@ -120,10 +120,10 @@ export const Viewer: React.FunctionComponent<AppProps> = ({
           <div css={cssObject.fourthStyle}>
             <FrameConnector
               // Source should link to a working renderer. In this case you
-              // could run the other renderer repository on :3000 and have
-              // this examples work. If that doesn't work, simply change it
-              // to https://renderer.mza.jp/
-              source="http://localhost:3000"
+              // could run the other renderer repository on localhost:3000 
+              // and have this examples work. If that doesn't work, simply 
+              // change it to https://www.renderer.mza.jp/
+              source="https://www.renderer.mza.jp" //http://localhost:3000
               dispatch={fromFrame}
               onConnected={fn}
               css={css`
